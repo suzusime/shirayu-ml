@@ -2,7 +2,7 @@
 open Syntax
 %}
 
-%token LPAREN RPAREN SERMISEMI
+%token LPAREN RPAREN SEMISEMI
 %token PLUS MULT LT
 %token IF THEN ELSE TRUE FALSE
 
@@ -34,8 +34,9 @@ PExpr :
 (* multiplication expression *)
 MExpr :
     l=MExpr MULT r=AExpr { BinOp (Mult, l, r) }
-  | e=AExpr
+  | e=AExpr { e }
 
+(* a expression *)
 AExpr :
     i=INTV { ILit i }
   | TRUE { BLit true }
