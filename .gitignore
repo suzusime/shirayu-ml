@@ -21,3 +21,13 @@ setup.log
 
 # Merlin configuring file for Vim and Emacs
 .merlin
+
+# user ----------------
+._d/
+._ncdi/
+lexer.ml
+miniml
+parser.automaton
+parser.conflicts
+parser.ml
+parser.mli
