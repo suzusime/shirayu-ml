@@ -4,6 +4,8 @@
     ("else", Parser.ELSE);
     ("false", Parser.FALSE);
     ("if", Parser.IF);
+    ("in", Parser.IN);
+    ("let", Parser.LET);
     ("then", Parser.THEN);
     ("true", Parser.TRUE);
   ]
@@ -23,6 +25,7 @@ rule main = parse
   | "<" { Parser.LT }
   | "&&" { Parser.AND }
   | "||" { Parser.OR }
+  | "=" { Parser.EQ }
   | ['a'-'z'] ['a'-'z' '0'-'9' '_' ''']*
     { let id = Lexing.lexeme lexbuf in
       try
