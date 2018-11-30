@@ -14,6 +14,9 @@ let rec read_eval_print env =
 let initial_env =
   Environment.empty
   |> Environment.extend "i" (IntV 1)
+  |> Environment.extend "ii" (IntV 2)
+  |> Environment.extend "iii" (IntV 3)
+  |> Environment.extend "iv" (IntV 4)
   |> Environment.extend "v" (IntV 5)
   |> Environment.extend "x" (IntV 10)
 
