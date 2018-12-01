@@ -58,6 +58,10 @@ let rec ty_exp tyenv = function
   | _ -> err ("Not Implemented!")
 
 let ty_decl tyenv = function
-    Exp e -> ty_exp tyenv e
+    Exp e -> (ty_exp tyenv e), tyenv
+  | Decl (id, e) ->
+    let ty = ty_exp tyenv e in
+    let newtyenv = Environment.extend id ty tyenv in
+    ty, newtyenv
   | _ -> err ("Not Implemented!")
 
