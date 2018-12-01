@@ -10,6 +10,7 @@ type exp =
   | BinOp of binOp * exp * exp
   | IfExp of exp * exp * exp (* if e1 then e2 else e3*)
   | LetExp of id * exp * exp (* let id = e1 in e2 *)
+  | LetRecExp of id * id * exp * exp (* let rec i1 i2 = e1 in e2 *)
   | FunExp of id * exp
   | AppExp of exp * exp
 

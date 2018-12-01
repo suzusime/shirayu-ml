@@ -12,6 +12,7 @@ let make_higher_order_func l e =
 %token IF THEN ELSE TRUE FALSE
 %token LET IN EQ
 %token RARROW FUN
+%token REC
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -31,6 +32,7 @@ toplevel :
 Expr :
     e=IfExpr { e }
   | e=LetExpr { e }
+  | e=LetRecExpr { e }
   | e=ORExpr { e }
   | e=FunExpr { e }
 
@@ -40,6 +42,10 @@ LetExpr :
     { let func_exp = make_higher_order_func l e1 in
       LetExp (x, func_exp, e2) }
   | LET x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) }
+
+(* let rec expression *)
+LetRecExpr :
+    LET REC x=ID EQ FUN a=ID RARROW e1=Expr IN e2=Expr { LetRecExp (x, a, e1, e2) }
 
 (* or expression *)
 ORExpr :

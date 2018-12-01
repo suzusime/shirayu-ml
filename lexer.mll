@@ -9,6 +9,7 @@
     ("let", Parser.LET);
     ("then", Parser.THEN);
     ("true", Parser.TRUE);
+    ("rec", Parser.REC);
   ]
 }
 

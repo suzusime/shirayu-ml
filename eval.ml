@@ -4,7 +4,7 @@ open Syntax
 type exval =
   | IntV of int
   | BoolV of bool
-  | ProcV of id * exp * dnval Environment.t
+  | ProcV of id * exp * dnval Environment.t ref
 and dnval = exval
 
 exception Error of string
@@ -55,14 +55,22 @@ let rec eval_exp env = function
     (* evaluate exp2 in new environment *)
     let newenv = Environment.extend id value env in
     eval_exp newenv exp2
-  | FunExp (id, exp) -> ProcV (id, exp, env)
+  | LetRecExp (id, para, exp1, exp2 ) ->
+    (* make ref of a dummy environment *)
+    let dummyenv = ref Environment.empty in
+    (* make a closure and extend env *)
+    let newenv = Environment.extend id (ProcV (para, exp1, dummyenv)) env in
+    (* backpatch *)
+    dummyenv := newenv;
+    eval_exp newenv exp2
+  | FunExp (id, exp) -> ProcV (id, exp, ref env)
   | AppExp (exp1, exp2) ->
     let funval = eval_exp env exp1 in
     let arg = eval_exp env exp2 in
     (match funval with
        ProcV (id, body, env') ->
        (* extend the environment in the closure with parameters *)
-       let newenv = Environment.extend id arg env' in
+       let newenv = Environment.extend id arg !env' in
        eval_exp newenv body
      | _ -> err ("Non-function value is applied"))
 
