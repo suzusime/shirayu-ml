@@ -68,5 +68,10 @@ AExpr :
   | i=ID { Var i }
   | LPAREN e=Expr RPAREN { e }
 
+(* if expression *)
 IfExpr :
   IF c=Expr THEN t=Expr ELSE e=Expr { IfExp (c, t, e) }
+
+(* fuction expression *)
+FunExpr :
+  FUN x=ID RARROW e=Expr { FunExp (x, e) }
