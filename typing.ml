@@ -41,16 +41,20 @@ let rec ty_exp tyenv = function
     let tyarg1 = ty_exp tyenv exp1 in
     let tyarg2 = ty_exp tyenv exp2 in
     ty_prim op tyarg1 tyarg2
-  | IfExp (t, e1, e2) ->
-    let tytest = ty_exp tyenv t in
-    let tye1 = ty_exp tyenv e1 in
-    let tye2 = ty_exp tyenv e2 in
+  | IfExp (test, exp1, exp2) ->
+    let tytest = ty_exp tyenv test in
+    let tye1 = ty_exp tyenv exp1 in
+    let tye2 = ty_exp tyenv exp2 in
     (match tytest with
        TyBool ->
        if tye1 = tye2 then tye1 else err ("Types of results must agree: if")
      | _ -> err ("Test expression must have type boolean: if")
     )
-  | LetExp (id, exp1, exp2) -> err ("Not Implemented!")
+  | LetExp (id, exp1, exp2) ->
+    let tye1 = ty_exp tyenv exp1 in
+    let newtyenv = Environment.extend id tye1 tyenv in
+    let tye2 = ty_exp newtyenv exp2 in
+    tye2
   | _ -> err ("Not Implemented!")
 
 let ty_decl tyenv = function
