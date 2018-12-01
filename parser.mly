@@ -6,6 +6,7 @@ open Syntax
 %token PLUS MULT LT AND OR
 %token IF THEN ELSE TRUE FALSE
 %token LET IN EQ
+%token RARROW FUN
 
 %token <int> INTV
 %token <Syntax.id> ID
@@ -23,6 +24,7 @@ Expr :
     e=IfExpr { e }
   | e=LetExpr { e }
   | e=ORExpr { e }
+  | e=FunExpr { e }
 
 (* let expression *)
 LetExpr :
@@ -50,7 +52,12 @@ PExpr :
 
 (* multiplication expression *)
 MExpr :
-    l=MExpr MULT r=AExpr { BinOp (Mult, l, r) }
+    l=MExpr MULT r=AppExpr { BinOp (Mult, l, r) }
+  | e=AppExpr { e }
+
+(* apply function *)
+AppExpr :
+    e1=AppExpr e2=AExpr { AppExp (e1, e2) }
   | e=AExpr { e }
 
 (* a expression *)
