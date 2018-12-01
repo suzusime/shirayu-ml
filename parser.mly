@@ -27,6 +27,8 @@ toplevel :
     { let func_exp = make_higher_order_func l e in
       Decl (x, func_exp) }
   | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
+  | LET REC x=ID EQ FUN a=ID RARROW e=Expr SEMISEMI { RecDecl (x, a, e) }
+  | LET REC x=ID a=ID EQ e=Expr SEMISEMI { RecDecl (x, a, e) }
 
 (* expression *)
 Expr :
@@ -46,6 +48,7 @@ LetExpr :
 (* let rec expression *)
 LetRecExpr :
     LET REC x=ID EQ FUN a=ID RARROW e1=Expr IN e2=Expr { LetRecExp (x, a, e1, e2) }
+  | LET REC x=ID a=ID EQ e1=Expr IN e2=Expr { LetRecExp (x, a, e1, e2) }
 
 (* or expression *)
 ORExpr :

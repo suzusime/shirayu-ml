@@ -83,5 +83,11 @@ let eval_decl env = function
     let v = eval_exp env e in
     let newenv = Environment.extend id v env in
     (id, newenv, v)
+  | RecDecl (id, para, exp) ->
+    let dummyenv = ref Environment.empty in
+    let v = ProcV (para, exp, dummyenv) in
+    let newenv = Environment.extend id v env in
+    dummyenv := newenv;
+    (id, newenv, v)
 
 
