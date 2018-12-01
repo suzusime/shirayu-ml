@@ -6,9 +6,12 @@ let rec read_eval_print env tyenv =
   print_string "# ";
   flush stdout;
   let decl = Parser.toplevel Lexer.main (Lexing.from_channel stdin) in
-  let ty = ty_decl tyenv decl in
   try
+    (* execute type checking *)
+    let ty = ty_decl tyenv decl in
+    (* evaluate value *)
     let (id, newenv, v) = eval_decl env decl in
+    (* print *)
     Printf.printf "val %s : " id;
     pp_ty ty;
     print_string " = ";
@@ -16,8 +19,11 @@ let rec read_eval_print env tyenv =
     print_newline();
     read_eval_print newenv tyenv
   with
-    Error e ->
-    print_endline ("[Error] " ^ e);
+    Typing.Error e ->
+    print_endline ("[Type Error] " ^ e);
+    read_eval_print env tyenv
+  | Eval.Error e ->
+    print_endline ("[Eval Error] " ^ e);
     read_eval_print env tyenv
 
 let initial_env =
