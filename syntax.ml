@@ -18,3 +18,11 @@ type program =
     Exp of exp
   | Decl of id * exp (* let id = e;; *)
   | RecDecl of id * id * exp (* let rec i1 = fun i2 -> e;; *)
+
+type ty =
+    TyInt
+  | TyBool
+
+let pp_ty = function
+    TyInt -> print_string "int"
+  | TyBool -> print_string "bool"
