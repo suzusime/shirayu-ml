@@ -74,4 +74,5 @@ IfExpr :
 
 (* fuction expression *)
 FunExpr :
-  FUN x=ID RARROW e=Expr { FunExp (x, e) }
+   FUN l=nonempty_list(ID) RARROW e=Expr
+   { let f x e = FunExp(x, e) in List.fold_right f l e }
