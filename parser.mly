@@ -1,5 +1,10 @@
 %{
 open Syntax
+
+let make_higher_order_func l e =
+  let f x e = FunExp(x,e) in
+  List.fold_right f l e
+
 %}
 
 %token LPAREN RPAREN SEMISEMI
@@ -17,6 +22,9 @@ open Syntax
 
 toplevel :
     e=Expr SEMISEMI { Exp e }
+  | LET x=ID l=nonempty_list(ID) EQ e=Expr SEMISEMI
+    { let func_exp = make_higher_order_func l e in
+      Decl (x, func_exp) }
   | LET x=ID EQ e=Expr SEMISEMI { Decl (x, e) }
 
 (* expression *)
@@ -28,7 +36,10 @@ Expr :
 
 (* let expression *)
 LetExpr :
-  LET x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) }
+    LET x=ID l=nonempty_list(ID) EQ e1=Expr IN e2=Expr
+    { let func_exp = make_higher_order_func l e1 in
+      LetExp (x, func_exp, e2) }
+  | LET x=ID EQ e1=Expr IN e2=Expr { LetExp (x, e1, e2) }
 
 (* or expression *)
 ORExpr :
@@ -74,5 +85,4 @@ IfExpr :
 
 (* fuction expression *)
 FunExpr :
-   FUN l=nonempty_list(ID) RARROW e=Expr
-   { let f x e = FunExp(x, e) in List.fold_right f l e }
+   FUN l=nonempty_list(ID) RARROW e=Expr { make_higher_order_func l e }
