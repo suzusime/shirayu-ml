@@ -22,6 +22,33 @@ let subst_type s ty =
   in
   List.fold_left f ty s
 
+(* (ty * ty) list -> subst *)
+let rec unify (pairs:(ty*ty) list) = match pairs with
+    [] -> []
+  | (t1, t2) :: rest ->
+    if t1 = t2 then
+      unify rest
+    else match (t1, t2) with
+        (TyFun (t11, t12), TyFun (t21, t22)) ->
+        unify ((t11, t21)::(t12, t22)::rest)
+      | (TyVar v, t) | (t, TyVar v)->
+        let vars = freevar_ty t in
+        if MySet.member v vars then
+          err ("t can't contain alpha (ref. ex.4.3.4)")
+        else
+          let s = [(v, t)] in
+          (* new constraint *)
+          let newcon =
+            let subst_pair (t1, t2) =
+              ((subst_type s t1), (subst_type s t2))
+            in
+            List.map subst_pair rest
+          in
+          let unified = unify newcon in
+          s :: unified
+      | _ -> err ("Unify failed")
+
+
 let ty_prim op ty1 ty2 = match op with
     Plus ->
     (match ty1, ty2 with
