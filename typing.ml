@@ -22,8 +22,20 @@ let subst_type s ty =
   in
   List.fold_left f ty s
 
+(* subst -> (ty * ty) list *)
+let eqs_of_subst s =
+  let l = MySet.to_list s in
+  List.map (fun (v, t) -> ((TyVar v), t)) l
+
+(* subst -> (ty * ty) list -> (ty * ty) list *)
+let subst_eqs s eqs =
+  let subst_pair (t1, t2) =
+    ((subst_type s t1), (subst_type s t2))
+  in
+  List.map subst_pair eqs
+
 (* (ty * ty) list -> subst *)
-let rec unify (pairs:(ty*ty) list) = match pairs with
+let rec unify pairs = match pairs with
     [] -> []
   | (t1, t2) :: rest ->
     if t1 = t2 then
@@ -38,12 +50,7 @@ let rec unify (pairs:(ty*ty) list) = match pairs with
         else
           let s = [(v, t)] in
           (* new constraint *)
-          let newcon =
-            let subst_pair (t1, t2) =
-              ((subst_type s t1), (subst_type s t2))
-            in
-            List.map subst_pair rest
-          in
+          let newcon = subst_eqs s rest in
           let unified = unify newcon in
           s :: unified
       | _ -> err ("Unify failed")
