@@ -8,7 +8,7 @@ let rec read_eval_print env tyenv =
   let decl = Parser.toplevel Lexer.main (Lexing.from_channel stdin) in
   try
     (* execute type checking *)
-    let (ty, newtyenv) = ty_decl tyenv decl in
+    let ((s,ty), newtyenv) = ty_decl tyenv decl in
     (* evaluate value *)
     let (id, newenv, v) = eval_decl env decl in
     (* print *)

@@ -24,8 +24,7 @@ let subst_type s ty =
 
 (* subst -> (ty * ty) list *)
 let eqs_of_subst s =
-  let l = MySet.to_list s in
-  List.map (fun (v, t) -> ((TyVar v), t)) l
+  List.map (fun (v, t) -> ((TyVar v), t)) s
 
 (* subst -> (ty * ty) list -> (ty * ty) list *)
 let subst_eqs s eqs =
@@ -52,65 +51,58 @@ let rec unify pairs = match pairs with
           (* new constraint *)
           let newcon = subst_eqs s rest in
           let unified = unify newcon in
-          s :: unified
+          s @ unified
       | _ -> err ("Unify failed")
 
-
+(* binOp -> ty -> ty -> ((ty * ty) list * ty) *)
 let ty_prim op ty1 ty2 = match op with
-    Plus ->
-    (match ty1, ty2 with
-       TyInt, TyInt -> TyInt
-     | _ -> err ("Argument must be of integer: +"))
-  | Mult ->
-    (match ty1, ty2 with
-       TyInt, TyInt -> TyInt
-     | _ -> err ("Argument must be of integer: *"))
-  | Lt ->
-    (match ty1, ty2 with
-       TyInt, TyInt -> TyBool
-     | _ -> err ("Argument must be of integer: <"))
-  | Or ->
-    (match ty1, ty2 with
-       TyBool, TyBool -> TyBool
-     | _ -> err ("Argument must be of boolean: ||"))
-  | And ->
-    (match ty1, ty2 with
-       TyBool, TyBool -> TyBool
-     | _ -> err ("Argument must be of boolean: &&"))
+    Plus -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
+  | Mult -> ([(ty1, TyInt); (ty2, TyInt)], TyInt)
+  | Lt -> ([(ty1, TyInt); (ty2, TyInt)], TyBool)
+  | Or -> ([(ty1, TyBool); (ty2, TyBool)], TyBool)
+  | And -> ([(ty1, TyBool); (ty2, TyBool)], TyBool)
 
+(* ty t -> exp -> ((tyvar * ty) list * ty) *)
 let rec ty_exp tyenv = function
     Var x ->
     (try
-       Environment.lookup x tyenv
+       ([], Environment.lookup x tyenv)
      with
        Environment.Not_bound -> err ("Variable not bound: " ^ x))
-  | ILit _ -> TyInt
-  | BLit _ -> TyBool
+  | ILit _ -> ([], TyInt)
+  | BLit _ -> ([], TyBool)
   | BinOp (op, exp1, exp2) ->
-    let tyarg1 = ty_exp tyenv exp1 in
-    let tyarg2 = ty_exp tyenv exp2 in
-    ty_prim op tyarg1 tyarg2
+    let (s1, ty1) = ty_exp tyenv exp1 in
+    let (s2, ty2) = ty_exp tyenv exp2 in
+    let (eqs3, ty) = ty_prim op ty1 ty2 in
+    let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ eqs3 in
+    let s3 = unify eqs in
+    (s3, subst_type s3 ty)
   | IfExp (test, exp1, exp2) ->
-    let tytest = ty_exp tyenv test in
-    let tye1 = ty_exp tyenv exp1 in
-    let tye2 = ty_exp tyenv exp2 in
-    (match tytest with
-       TyBool ->
-       if tye1 = tye2 then tye1 else err ("Types of results must agree: if")
-     | _ -> err ("Test expression must have type boolean: if")
-    )
+    let (st, tyt) = ty_exp tyenv test in
+    let (s1, ty1) = ty_exp tyenv exp1 in
+    let (s2, ty2) = ty_exp tyenv exp2 in
+    let eqs = (eqs_of_subst st) @ (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(tyt, TyBool); (ty1, ty2)] in
+    let s3 = unify eqs in
+    (s3, subst_type s3 ty1)
   | LetExp (id, exp1, exp2) ->
-    let tye1 = ty_exp tyenv exp1 in
-    let newtyenv = Environment.extend id tye1 tyenv in
-    let tye2 = ty_exp newtyenv exp2 in
-    tye2
+    let (s1, ty1) = ty_exp tyenv exp1 in
+    let newtyenv = Environment.extend id ty1 tyenv in
+    let (s2, ty2) = ty_exp newtyenv exp2 in
+    (s2, ty2)
+  | FunExp (id, exp) ->
+    let domty = TyVar (fresh_tyvar ()) in
+    let s, ranty =
+      ty_exp (Environment.extend id domty tyenv) exp
+    in
+    (s, TyFun (subst_type s domty, ranty))
   | _ -> err ("Not Implemented!")
 
 let ty_decl tyenv = function
     Exp e -> (ty_exp tyenv e), tyenv
   | Decl (id, e) ->
-    let ty = ty_exp tyenv e in
+    let (s, ty) = ty_exp tyenv e in
     let newtyenv = Environment.extend id ty tyenv in
-    ty, newtyenv
+    (s, ty), newtyenv
   | _ -> err ("Not Implemented!")
 
