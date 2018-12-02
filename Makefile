@@ -13,5 +13,6 @@ all: nc
 
 test: $(RESULT)
 	ocaml mySet.cmo syntax.cmo environment.cmo typing.cmo test.ml
+	./typetest.sh
 
 include OCamlMakefile
