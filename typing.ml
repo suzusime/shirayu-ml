@@ -7,6 +7,21 @@ let err s = raise (Error s)
 (* Type Environment *)
 type tyenv = ty Environment.t
 
+(* type substitution *)
+type subst = (tyvar * ty) list
+
+(* subst -> ty ->ty *)
+let subst_type s ty =
+  (* ty -> tyvar*ty -> ty *)
+  let rec f t r =
+    let (v_from, type_to) = r in
+    match t with
+      TyVar v -> if v=v_from then type_to else TyVar v
+    | TyFun (t1, t2) -> TyFun ((f t1 r), (f t2 r))
+    | t -> t
+  in
+  List.fold_left f ty s
+
 let ty_prim op ty1 ty2 = match op with
     Plus ->
     (match ty1, ty2 with

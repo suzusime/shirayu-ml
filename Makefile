@@ -11,4 +11,7 @@ OCAMLYACC=menhir
 
 all: nc
 
+test: $(RESULT)
+	ocaml mySet.cmo syntax.cmo environment.cmo typing.cmo test.ml
+
 include OCamlMakefile
