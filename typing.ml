@@ -96,6 +96,13 @@ let rec ty_exp tyenv = function
       ty_exp (Environment.extend id domty tyenv) exp
     in
     (s, TyFun (subst_type s domty, ranty))
+  | AppExp (exp1, exp2) ->
+    let (s1, ty1) = ty_exp tyenv exp1 in
+    let (s2, ty2) = ty_exp tyenv exp2 in
+    let ranty = TyVar (fresh_tyvar ()) in
+    let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(ty1, TyFun (ty2, ranty))] in
+    let s3 = unify eqs in
+    (s3, subst_type s3 ranty)
   | _ -> err ("Not Implemented!")
 
 let ty_decl tyenv = function
