@@ -19,10 +19,35 @@ type program =
   | Decl of id * exp (* let id = e;; *)
   | RecDecl of id * id * exp (* let rec i1 = fun i2 -> e;; *)
 
+type tyvar = int
+
 type ty =
     TyInt
   | TyBool
+  | TyVar of tyvar
+  | TyFun of ty * ty
 
-let pp_ty = function
+let rec pp_ty = function
     TyInt -> print_string "int"
   | TyBool -> print_string "bool"
+  | TyVar v -> print_string ("type variable " ^ (string_of_int v))
+  | TyFun (t1, t2) -> (match t1 with
+        TyFun _ ->
+        print_string "("; pp_ty t1; print_string ") -> "; pp_ty t2
+      | _ -> pp_ty t1; print_string " -> "; pp_ty t2)
+
+let fresh_tyvar =
+  let counter = ref 0 in
+  let body () =
+    let v = !counter in
+    counter := v + 1; v
+  in body
+
+let rec freevar_ty ty = match ty with
+    TyVar v -> MySet.singleton v
+  | TyFun (t1, t2) ->
+    let s1 = freevar_ty t1 in
+    let s2 = freevar_ty t2 in
+    MySet.union s1 s2
+  | _ -> MySet.empty
+
