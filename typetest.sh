@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 cat testcase.txt | while read line
 do
    echo $line
