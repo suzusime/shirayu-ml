@@ -1,0 +1,4 @@
+(* Expected: ('a -> ('a -> 'a) -> bool) -> 'a -> ('a -> 'a) -> 'a *)
+fun x -> fun y -> fun z -> let b = x y z in if b then z y else y;;
+(* Expected: Type Error *)
+fun x -> fun y -> fun z -> let b = x y z in if b then z y else z x;;
