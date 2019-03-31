@@ -105,6 +105,18 @@ let rec ty_exp tyenv = function
     let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(ty1, TyFun (ty2, ranty))] in
     let s3 = unify eqs in
     (s3, subst_type s3 ranty)
+  | LetRecExp (f, x, exp1, exp2) ->
+    let domty = TyVar (fresh_tyvar ()) in
+    let dummy_ty_f = TyVar (fresh_tyvar ()) in
+    let tyenv_added_by_dummy_f = Environment.extend f dummy_ty_f tyenv in
+    let (sf, ty_f) = ty_exp tyenv_added_by_dummy_f (FunExp (x, exp1)) in
+    let tyenv_added_by_f = Environment.extend f ty_f tyenv_added_by_dummy_f in
+    let (s1, ranty) = ty_exp tyenv_added_by_f exp2 in
+    let newtyenv = Environment.extend x domty tyenv_added_by_f in
+    let (s2, ty2) = ty_exp newtyenv exp1 in
+    let eqs = (eqs_of_subst sf) @ (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(ty_f, dummy_ty_f)] in
+    let s3 = unify eqs in
+    (s3, subst_type s3 ranty)
   | _ -> err ("Not Implemented!")
 
 let ty_decl tyenv = function
