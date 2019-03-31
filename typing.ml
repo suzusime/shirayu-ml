@@ -89,7 +89,9 @@ let rec ty_exp tyenv = function
     let (s1, ty1) = ty_exp tyenv exp1 in
     let newtyenv = Environment.extend id ty1 tyenv in
     let (s2, ty2) = ty_exp newtyenv exp2 in
-    (s2, ty2)
+    let eqs = (eqs_of_subst s1) @ (eqs_of_subst s2) @ [(ty1, ty2)] in
+    let s3 = unify eqs in
+    (s3, subst_type s3 ty1)
   | FunExp (id, exp) ->
     let domty = TyVar (fresh_tyvar ()) in
     let s, ranty =
