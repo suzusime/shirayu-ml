@@ -27,8 +27,23 @@ type ty =
   | TyVar of tyvar
   | TyFun of ty * ty
 
+let num_to_alph num =
+  let alphs =
+    ["a";"b";"c";"d";"e";"f";"g";"h";"i";"j";"k";"l";"m";"n";"o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z"]
+  in
+  let alph_num = List.length alphs in
+  let rec f n =
+    if n < alph_num then
+      List.nth alphs n
+    else
+      let q = n / alph_num in
+      let r = n mod alph_num in
+      (f q) ^ (f r)
+  in
+  f num
+
 (* update tyvar dict and return tyvar alphabet *)
-let get_tyvar_alph dict v =
+let get_tyvar_num dict v =
   let accord x =
     let (ty, num) = x in ty = v
   in
@@ -44,8 +59,9 @@ let rec pp_ty t dict = match t with
     TyInt -> print_string "int"; dict
   | TyBool -> print_string "bool"; dict
   | TyVar v ->
-    let (num, newdict) = get_tyvar_alph dict v in
-    print_string ("type variable " ^ (string_of_int num)); newdict
+    let (num, newdict) = get_tyvar_num dict v in
+    let tyvar_alph = num_to_alph num in
+    print_string ("'" ^ tyvar_alph); newdict
   | TyFun (t1, t2) -> (match t1 with
         TyFun _ ->
         print_string "(";
