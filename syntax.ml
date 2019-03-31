@@ -27,14 +27,35 @@ type ty =
   | TyVar of tyvar
   | TyFun of ty * ty
 
-let rec pp_ty = function
-    TyInt -> print_string "int"
-  | TyBool -> print_string "bool"
-  | TyVar v -> print_string ("type variable " ^ (string_of_int v))
+(* update tyvar dict and return tyvar alphabet *)
+let get_tyvar_alph dict v =
+  let accord x =
+    let (ty, num) = x in ty = v
+  in
+  if List.exists accord dict then
+    let (ty, num) = List.find accord dict in
+    (num, dict)
+  else
+    let num = List.length dict in
+    let new_dict = (v, num) :: dict in
+    (num, new_dict)
+
+let rec pp_ty t dict = match t with
+    TyInt -> print_string "int"; dict
+  | TyBool -> print_string "bool"; dict
+  | TyVar v ->
+    let (num, newdict) = get_tyvar_alph dict v in
+    print_string ("type variable " ^ (string_of_int num)); newdict
   | TyFun (t1, t2) -> (match t1 with
         TyFun _ ->
-        print_string "("; pp_ty t1; print_string ") -> "; pp_ty t2
-      | _ -> pp_ty t1; print_string " -> "; pp_ty t2)
+        print_string "(";
+        let newdict1 = pp_ty t1 dict in
+        print_string ") -> ";
+        pp_ty t2 newdict1
+      | _ ->
+        let newdict1 = pp_ty t1 dict in
+        print_string " -> ";
+        pp_ty t2 newdict1)
 
 let fresh_tyvar =
   let counter = ref 0 in

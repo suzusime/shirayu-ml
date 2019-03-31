@@ -2,7 +2,7 @@ open Syntax
 open Eval
 open Typing
 
-let rec read_eval_print env tyenv =
+let rec read_eval_print env tyenv tyvar_dict =
   print_string "# ";
   flush stdout;
   let decl = Parser.toplevel Lexer.main (Lexing.from_channel stdin) in
@@ -13,18 +13,18 @@ let rec read_eval_print env tyenv =
     let (id, newenv, v) = eval_decl env decl in
     (* print *)
     Printf.printf "val %s : " id;
-    pp_ty ty;
+    let new_tyvar_dict = pp_ty ty tyvar_dict in
     print_string " = ";
     pp_val v;
     print_newline();
-    read_eval_print newenv newtyenv
+    read_eval_print newenv newtyenv new_tyvar_dict
   with
     Typing.Error e ->
     print_endline ("[Type Error] " ^ e);
-    read_eval_print env tyenv
+    read_eval_print env tyenv tyvar_dict
   | Eval.Error e ->
     print_endline ("[Eval Error] " ^ e);
-    read_eval_print env tyenv
+    read_eval_print env tyenv tyvar_dict
 
 let initial_env =
   Environment.empty
@@ -44,5 +44,7 @@ let initial_tyenv =
   |> Environment.extend "v" TyInt
   |> Environment.extend "x" TyInt
 
-let _ = read_eval_print initial_env initial_tyenv
+let initial_tyvar_dict = []
+
+let _ = read_eval_print initial_env initial_tyenv initial_tyvar_dict
 
