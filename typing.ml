@@ -125,5 +125,13 @@ let ty_decl tyenv = function
     let (s, ty) = ty_exp tyenv e in
     let newtyenv = Environment.extend id ty tyenv in
     (s, ty), newtyenv
+  | RecDecl (f, x, exp) ->
+    let dumm_ty_f = TyVar (fresh_tyvar ()) in
+    let tyenv_added_by_dummy_f = Environment.extend f dumm_ty_f tyenv in
+    let (sf, ty_f) = ty_exp tyenv_added_by_dummy_f (FunExp (x, exp)) in
+    let tyenv_added_by_f = Environment.extend f ty_f tyenv_added_by_dummy_f in
+    let eqs = (eqs_of_subst sf) @ [(ty_f, dumm_ty_f)] in
+    let s = unify eqs in
+    (s, subst_type s ty_f), tyenv_added_by_f
   | _ -> err ("Not Implemented!")
 
